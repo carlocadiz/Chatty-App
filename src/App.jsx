@@ -6,7 +6,7 @@ export default class App extends Component {
 
   constructor(props) {
     super(props);
-
+    const socket={};
     this.state = {
                    currentUser: {name: "Bob"}, // optional. if currentUser is not defined, it means the user is Anonymous
                     messages: [
@@ -36,6 +36,10 @@ export default class App extends Component {
   }
 
   componentDidMount() {
+    this.socket = new WebSocket("ws://localhost:3001")
+    this.socket.onopen = function(event) {
+      console.log("Connected to server");
+    };
     console.log("componentDidMount <App />");
     setTimeout(() => {
       console.log("Simulating incoming message");

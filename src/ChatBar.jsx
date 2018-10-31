@@ -3,8 +3,6 @@ import React, {Component} from 'react';
 
 export default class Chatbar extends Component {
 
-
-
 _onEnter = (e) => {
     if (e.key === 'Enter') {
       this.props.addMessage( e.target.value);
@@ -12,10 +10,7 @@ _onEnter = (e) => {
     }
   }
 
-
 render(){
-
-
   return(
 
     <footer className="chatbar">
