@@ -6,7 +6,6 @@ export default class App extends Component {
 
   constructor(props) {
     super(props);
-    const socket={};
     this.state = {
                    currentUser: {name: "Bob"}, // optional. if currentUser is not defined, it means the user is Anonymous
                     messages: [
@@ -29,6 +28,10 @@ export default class App extends Component {
 
 
   _addMessage(message){
+
+    const messageToServer = {username: this.state.currentUser.name , content:message};
+      this.socket.send(JSON.stringify(messageToServer));
+
     this.setState({ counter: this.state.counter + 1 });
     const newMessage = {id: this.state.counter, username: this.state.currentUser.name, content: message};
     const messages = this.state.messages.concat(newMessage)
@@ -40,6 +43,7 @@ export default class App extends Component {
     this.socket.onopen = function(event) {
       console.log("Connected to server");
     };
+
     console.log("componentDidMount <App />");
     setTimeout(() => {
       console.log("Simulating incoming message");
