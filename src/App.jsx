@@ -44,7 +44,7 @@ export default class App extends Component {
       switch(serverData.type) {
       case "incomingMessage":
         // handle incoming message
-        const newMessage = {id: serverData.id, content: serverData.content, username: serverData.username};
+        const newMessage = {type: serverData.type, id: serverData.id, content: serverData.content, username: serverData.username};
         const messages = this.state.messages.concat(newMessage)
         this.setState({messages: messages})
         break;
@@ -52,7 +52,7 @@ export default class App extends Component {
       case "incomingNotification":
         // handle incoming notification
         //console.log(serverData.content)
-        const notificationMessage = {id: serverData.id, content:serverData.content};
+        const notificationMessage = {type: serverData.type, id: serverData.id, content:serverData.content};
         this.setState({messages: this.state.messages.concat(notificationMessage)});
         break;
 
