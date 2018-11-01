@@ -15,15 +15,18 @@ export default class App extends Component {
     }
 
   _addMessage(message){
-
+    console.log(message)
 
     if (message.name !== this.state.currentUser){
       const notificationtoServer = {type: 'postNotification', content: `${this.state.currentUser} has changed their name to ${message.name}`};
       this.socket.send(JSON.stringify(notificationtoServer));
+      //this.setState({c})
+    } else {
+        const messageToServer = {type: 'postMessage', username: message.name , content:message.content};
+        this.socket.send(JSON.stringify(messageToServer));
+
     }
-      const messageToServer = {type: 'postMessage', username: message.name , content:message.content};
-      this.socket.send(JSON.stringify(messageToServer));
-      this.setState({currentUser: message.name});
+    this.setState({currentUser: message.name});
   }
 
 
@@ -35,6 +38,7 @@ export default class App extends Component {
     };
 
     this.socket.onmessage = (event) => {
+      //console.log(event);
       const serverData = JSON.parse(event.data);
 
       switch(serverData.type) {
@@ -47,15 +51,16 @@ export default class App extends Component {
 
       case "incomingNotification":
         // handle incoming notification
-        console.log(serverData.content)
-        const notificationMessage = {content:serverData.content};
+        //console.log(serverData.content)
+        const notificationMessage = {id: serverData.id, content:serverData.content};
         this.setState({messages: this.state.messages.concat(notificationMessage)});
-
         break;
 
       default:
         // show an error in the console if the message type is unknown
         console.log(event.data)
+        this.setState({users:serverData.number})
+        break;
         //throw new Error("Unknown event type " + data.type);
       }
 
@@ -70,6 +75,8 @@ export default class App extends Component {
      <div>
      <nav className="navbar">
      <a href="/" className="navbar-brand">Chatty</a>
+     <span className="navbar-users">Users online: {this.state.users}</span>
+
      </nav>
      <MessageList messages={this.state.messages}/>
      <Chatbar addMessage={this._addMessage} currentUser={this.state.currentUser}/>

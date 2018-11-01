@@ -3,7 +3,6 @@
 const express = require('express');
 const SocketServer = require('ws').Server;
 const uuid= require('uuid/v4');
-const WebSocket = require('ws');
 
 // Set the port to 3001
 const PORT = 3001;
@@ -22,8 +21,17 @@ const wss = new SocketServer({ server });
 // the ws parameter in the callback.
 wss.on('connection', (ws) => {
   console.log('Client connected');
-  ws.send(JSON.stringify({number:wss.clients.size}))
   console.log('number of clients',wss.clients.size)
+
+  wss.broadcast = function broadcast(data) {
+    wss.clients.forEach(function each(client) {
+        client.send(JSON.stringify(data));
+      });
+
+  };
+
+  wss.broadcast({number:wss.clients.size});
+
   // Broadcast to everyone else.
   ws.on('message', (data) => {
     const dataReceived = JSON.parse(data);
@@ -38,23 +46,20 @@ wss.on('connection', (ws) => {
         break;
       case "postNotification":
         // handle incoming notification
-        dataSend = {type: 'incomingNotification', content: dataReceived.content};
+        dataSend = {type: 'incomingNotification', id: uuid(), content: dataReceived.content};
         console.log(dataReceived.content);
         break;
       default:
         // show an error in the console if the message type is unknown
         throw new Error("Unknown event type " + dataReceived.type);
     }
+    wss.broadcast(dataSend);
 
-    wss.clients.forEach(function each(client) {
-      if (client.readyState === WebSocket.OPEN) {
-         client.send(JSON.stringify(dataSend));
-      }
-    });
   });
 
   // Set up a callback for when a client closes the socket. This usually means they closed their browser.
-  ws.on('close', () => {console.log('Client disconnected')
-
-  console.log('number of clients',wss.clients.size)});
+  ws.on('close', () => {console.log('Client disconnected');
+    wss.broadcast({number:wss.clients.size});
+    console.log('number of clients',wss.clients.size);
+  });
 });
