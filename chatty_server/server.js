@@ -22,28 +22,39 @@ const wss = new SocketServer({ server });
 // the ws parameter in the callback.
 wss.on('connection', (ws) => {
   console.log('Client connected');
-
+  ws.send(JSON.stringify({number:wss.clients.size}))
+  console.log('number of clients',wss.clients.size)
   // Broadcast to everyone else.
   ws.on('message', (data) => {
-    const dataReceived = JSON.parse(data)
-    const dataSend = {id: uuid(), username: dataReceived.username, content: dataReceived.content}
-    console.log(`User ${dataReceived.username} said ${dataReceived.content}`);
+    const dataReceived = JSON.parse(data);
+    let dataSend = {};
+    //console.log('server',dataReceived.type)
+
+    switch(dataReceived.type) {
+      case "postMessage":
+        // handle incoming message
+        dataSend = {type: 'incomingMessage', id: uuid(), username: dataReceived.username, content: dataReceived.content}
+        console.log(`User ${dataReceived.username} said ${dataReceived.content}`);
+        break;
+      case "postNotification":
+        // handle incoming notification
+        dataSend = {type: 'incomingNotification', content: dataReceived.content};
+        console.log(dataReceived.content);
+        break;
+      default:
+        // show an error in the console if the message type is unknown
+        throw new Error("Unknown event type " + dataReceived.type);
+    }
 
     wss.clients.forEach(function each(client) {
       if (client.readyState === WebSocket.OPEN) {
-         console.log(JSON.stringify(dataSend));
          client.send(JSON.stringify(dataSend));
       }
     });
   });
 
-  // ws.on('message', (data) => {
-  //   const dataReceived = JSON.parse(data)
-  //   console.log(`User ${dataReceived.username} said ${dataReceived.content}`);
-  // });
-
-
   // Set up a callback for when a client closes the socket. This usually means they closed their browser.
-  ws.on('close', () => {console.log('Client disconnected')});
+  ws.on('close', () => {console.log('Client disconnected')
 
+  console.log('number of clients',wss.clients.size)});
 });

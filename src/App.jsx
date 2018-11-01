@@ -7,53 +7,61 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-                   currentUser: {name: "Bob"}, // optional. if currentUser is not defined, it means the user is Anonymous
-                    messages: [
-                                {
-                                   id: "1",
-                                   username: "Bob",
-                                   content: "Has anyone seen my marbles?",
-                                },
-                                {
-                                   id: '2',
-                                   username: "Anonymous",
-                                   content: "No, I think you lost them. You lost your marbles Bob. You lost them for good."
-                                 }
-                               ],
-                    counter: 4
+                  currentUser: "Anonymous",
+                  messages: [], // messages coming from the server will be stored here as they arrive
                   };
 
     this._addMessage= this._addMessage.bind(this);
     }
 
-
   _addMessage(message){
 
-    const messageToServer = {username: this.state.currentUser.name , content:message};
-      this.socket.send(JSON.stringify(messageToServer));
 
-    this.setState({ counter: this.state.counter + 1 });
-    const newMessage = {id: this.state.counter, username: this.state.currentUser.name, content: message};
-    const messages = this.state.messages.concat(newMessage)
-    this.setState({messages: messages})
+    if (message.name !== this.state.currentUser){
+      const notificationtoServer = {type: 'postNotification', content: `${this.state.currentUser} has changed their name to ${message.name}`};
+      this.socket.send(JSON.stringify(notificationtoServer));
+    }
+      const messageToServer = {type: 'postMessage', username: message.name , content:message.content};
+      this.socket.send(JSON.stringify(messageToServer));
+      this.setState({currentUser: message.name});
   }
+
 
   componentDidMount() {
     this.socket = new WebSocket("ws://localhost:3001")
+
     this.socket.onopen = function(event) {
       console.log("Connected to server");
     };
 
+    this.socket.onmessage = (event) => {
+      const serverData = JSON.parse(event.data);
+
+      switch(serverData.type) {
+      case "incomingMessage":
+        // handle incoming message
+        const newMessage = {id: serverData.id, content: serverData.content, username: serverData.username};
+        const messages = this.state.messages.concat(newMessage)
+        this.setState({messages: messages})
+        break;
+
+      case "incomingNotification":
+        // handle incoming notification
+        console.log(serverData.content)
+        const notificationMessage = {content:serverData.content};
+        this.setState({messages: this.state.messages.concat(notificationMessage)});
+
+        break;
+
+      default:
+        // show an error in the console if the message type is unknown
+        console.log(event.data)
+        //throw new Error("Unknown event type " + data.type);
+      }
+
+    }
+
     console.log("componentDidMount <App />");
-    setTimeout(() => {
-      console.log("Simulating incoming message");
-      // Add a new message to the list of messages in the data store
-      const newMessage = {id: 3, username: "Michelle", content: "Hello there!"};
-      const messages = this.state.messages.concat(newMessage)
-      // Update the state of the app component.
-      // Calling setState will trigger a call to render() in App and all child components.
-      this.setState({messages: messages})
-    }, 3000);
   }
 
   render() {
@@ -64,7 +72,7 @@ export default class App extends Component {
      <a href="/" className="navbar-brand">Chatty</a>
      </nav>
      <MessageList messages={this.state.messages}/>
-     <Chatbar addMessage={this._addMessage} currentUser={this.state.currentUser.name}/>
+     <Chatbar addMessage={this._addMessage} currentUser={this.state.currentUser}/>
      </div>
     );
   };
