@@ -20,11 +20,12 @@ export default class App extends Component {
     if (message.name !== this.state.currentUser){
       const notificationtoServer = {type: 'postNotification', content: `${this.state.currentUser} has changed their name to ${message.name}`};
       this.socket.send(JSON.stringify(notificationtoServer));
-      //this.setState({c})
     } else {
-        const messageToServer = {type: 'postMessage', username: message.name , content: message.content, color: this.state.color };
+        const messageToServer = {type: 'postMessage',
+                                 username: message.name ,
+                                 content: message.content,
+                                 color: this.state.color };
         this.socket.send(JSON.stringify(messageToServer));
-
     }
     this.setState({currentUser: message.name});
   }
@@ -46,13 +47,12 @@ export default class App extends Component {
       case "incomingMessage":
         // handle incoming message
         const newMessage = {type: serverData.type, id: serverData.id, content: serverData.content, username: serverData.username, color: serverData.color};
-        const messages = this.state.messages.concat(newMessage)
+        const messages = this.state.messages.concat(serverData)
         this.setState({messages: messages})
         console.log('colour',this.state.messages)
         break;
 
       case "incomingNotification":
-
         const notificationMessage = {type: serverData.type, id: serverData.id, content:serverData.content};
         this.setState({messages: this.state.messages.concat(notificationMessage)});
         break;
@@ -60,18 +60,15 @@ export default class App extends Component {
 
         this.setState({color: serverData.color});
         console.log(serverData.color)
-
         break;
+
       case "numberOfUsers":
-        // show an error in the console if the message type is unknown
-        console.log(event.data)
+
+   //     console.log(event.data)
         this.setState({users:serverData.number})
-        break;
-        //throw new Error("Unknown event type " + data.type);
+        break;       //throw new Error("Unknown event type " + data.type);
       }
-
     }
-
     console.log("componentDidMount <App />");
   }
 
