@@ -22,7 +22,7 @@ export default class App extends Component {
       this.socket.send(JSON.stringify(notificationtoServer));
       //this.setState({c})
     } else {
-        const messageToServer = {type: 'postMessage', username: message.name , content:message.content};
+        const messageToServer = {type: 'postMessage', username: message.name , content: message.content, color: this.state.color };
         this.socket.send(JSON.stringify(messageToServer));
 
     }
@@ -31,6 +31,7 @@ export default class App extends Component {
 
 
   componentDidMount() {
+   // let localColour = "";
     this.socket = new WebSocket("ws://localhost:3001")
 
     this.socket.onopen = function(event) {
@@ -44,19 +45,24 @@ export default class App extends Component {
       switch(serverData.type) {
       case "incomingMessage":
         // handle incoming message
-        const newMessage = {type: serverData.type, id: serverData.id, content: serverData.content, username: serverData.username};
+        const newMessage = {type: serverData.type, id: serverData.id, content: serverData.content, username: serverData.username, color: serverData.color};
         const messages = this.state.messages.concat(newMessage)
         this.setState({messages: messages})
+        console.log('colour',this.state.messages)
         break;
 
       case "incomingNotification":
-        // handle incoming notification
-        //console.log(serverData.content)
+
         const notificationMessage = {type: serverData.type, id: serverData.id, content:serverData.content};
         this.setState({messages: this.state.messages.concat(notificationMessage)});
         break;
+      case "color":
 
-      default:
+        this.setState({color: serverData.color});
+        console.log(serverData.color)
+
+        break;
+      case "numberOfUsers":
         // show an error in the console if the message type is unknown
         console.log(event.data)
         this.setState({users:serverData.number})

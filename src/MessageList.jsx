@@ -12,7 +12,7 @@ export default class MessageList extends Component{
         {
           this.props.messages.map(message => {
             if(message.type === 'incomingMessage'){
-              return  <Message  username={message.username}  message={message.content} key={message.id}/>
+              return  <Message  username={message.username}  message={message.content} key={message.id} color={message.color}/>
             } else {
               return <Notification message={message.content}  key={message.id}/>
             }

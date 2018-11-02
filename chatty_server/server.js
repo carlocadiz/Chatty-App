@@ -7,11 +7,20 @@ const uuid= require('uuid/v4');
 // Set the port to 3001
 const PORT = 3001;
 
+
 // Create a new express server
 const server = express()
    // Make the express server serve static assets (html, javascript, css) from the /public folder
   .use(express.static('public'))
   .listen(PORT, '0.0.0.0', 'localhost', () => console.log(`Listening on ${ PORT }`));
+
+
+const colours = ['red', 'green', 'blue', 'orange'];
+
+function randomColour(){
+  //console.log(colour)
+  return colour = colours[Math.floor(Math.random() * colours.length)];
+}
 
 // Create the WebSockets server
 const wss = new SocketServer({ server });
@@ -22,15 +31,18 @@ const wss = new SocketServer({ server });
 wss.on('connection', (ws) => {
   console.log('Client connected');
   console.log('number of clients',wss.clients.size)
+  //const newUser = {number: wss.clients.size, colour:randomColour()};
+
+  ws.send(JSON.stringify({type:'color', color: randomColour()}));
+
 
   wss.broadcast = function broadcast(data) {
     wss.clients.forEach(function each(client) {
         client.send(JSON.stringify(data));
       });
-
   };
 
-  wss.broadcast({number:wss.clients.size});
+  wss.broadcast({type:'numberOfUsers', number: wss.clients.size,});
 
   // Broadcast to everyone else.
   ws.on('message', (data) => {
@@ -41,7 +53,7 @@ wss.on('connection', (ws) => {
     switch(dataReceived.type) {
       case "postMessage":
         // handle incoming message
-        dataSend = {type: 'incomingMessage', id: uuid(), username: dataReceived.username, content: dataReceived.content}
+        dataSend = {type: 'incomingMessage', id: uuid(), username: dataReceived.username, content: dataReceived.content, color: dataReceived.color}
         console.log(`User ${dataReceived.username} said ${dataReceived.content}`);
         break;
       case "postNotification":
@@ -59,7 +71,7 @@ wss.on('connection', (ws) => {
 
   // Set up a callback for when a client closes the socket. This usually means they closed their browser.
   ws.on('close', () => {console.log('Client disconnected');
-    wss.broadcast({number:wss.clients.size});
+    wss.broadcast({type: 'numberOfUsers', number:wss.clients.size});
     console.log('number of clients',wss.clients.size);
   });
 });
