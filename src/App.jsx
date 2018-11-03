@@ -1,91 +1,79 @@
 import React, {Component} from 'react';
-import Chatbar from "./ChatBar.jsx";
-import MessageList from "./MessageList.jsx";
+import Chatbar from './ChatBar.jsx';
+import MessageList from './MessageList.jsx';
 
 export default class App extends Component {
 
   constructor(props) {
     super(props);
     this.state = {
-                  currentUser: "Anonymous",
+                  currentUser: 'Anonymous',
                   messages: [], // messages coming from the server will be stored here as they arrive
                   };
-
     this._addMessage= this._addMessage.bind(this);
     }
 
-  _addMessage(message){
-    console.log(message)
 
+  // creates the message and sends to server. Depending if user has changed, the proper message will
+  // be built and sent. function is sent as a prop to Chatbar and returns an object username and message
+  // content.
+  _addMessage(message){
+    let newMessage = '';
     if (message.name !== this.state.currentUser){
-      const notificationtoServer = {type: 'postNotification', content: `${this.state.currentUser} has changed their name to ${message.name}`};
-      this.socket.send(JSON.stringify(notificationtoServer));
+        newMessage = {type: 'incomingNotification',
+                      content: `${this.state.currentUser} has changed their name to ${message.name}`};
     } else {
-        const messageToServer = {type: 'postMessage',
-                                 username: message.name ,
-                                 content: message.content,
-                                 color: this.state.color };
-        this.socket.send(JSON.stringify(messageToServer));
+        newMessage = {type: 'incomingMessage',
+                      username: message.name ,
+                      content: message.content,
+                      color: this.state.color };
     }
+    this.socket.send(JSON.stringify(newMessage));
     this.setState({currentUser: message.name});
   }
 
-
+  // Lifecycle method that creates a socket and connects to the server.
+  // It will also receive incoming messages from the server, and updates object
+  // elements dependant on message type.
   componentDidMount() {
-   // let localColour = "";
-    this.socket = new WebSocket("ws://localhost:3001")
 
-    this.socket.onopen = function(event) {
-      console.log("Connected to server");
-    };
+    this.socket = new WebSocket('ws://localhost:3001');
 
-    this.socket.onmessage = (event) => {
-      //console.log(event);
-      const serverData = JSON.parse(event.data);
+      this.socket.onmessage = (event) => {
+        const serverData = JSON.parse(event.data);
 
-      switch(serverData.type) {
-      case "incomingMessage":
-        // handle incoming message
-        const newMessage = {type: serverData.type, id: serverData.id, content: serverData.content, username: serverData.username, color: serverData.color};
-        const messages = this.state.messages.concat(serverData)
-        this.setState({messages: messages})
-        console.log('colour',this.state.messages)
-        break;
+        switch(serverData.type) {
 
-      case "incomingNotification":
-        const notificationMessage = {type: serverData.type, id: serverData.id, content:serverData.content};
-        this.setState({messages: this.state.messages.concat(notificationMessage)});
-        break;
-      case "color":
+          case 'color':
+            this.setState({color: serverData.color});
+          break;
 
-        this.setState({color: serverData.color});
-        console.log(serverData.color)
-        break;
+          case 'numberOfUsers':
+            this.setState({users:serverData.number});
+          break;
 
-      case "numberOfUsers":
-
-   //     console.log(event.data)
-        this.setState({users:serverData.number})
-        break;       //throw new Error("Unknown event type " + data.type);
+          default:
+          this.setState({messages: this.state.messages.concat(serverData)});
+        }
       }
     }
-    console.log("componentDidMount <App />");
-  }
 
+
+  // renders html and calls other compenants sending them props.
   render() {
 
     return (
      <div>
-     <nav className="navbar">
-     <a href="/" className="navbar-brand">Chatty</a>
-     <span className="navbar-users">Users online: {this.state.users}</span>
+     <nav className='navbar'>
+     <a href='/' className='navbar-brand'>Chatty</a>
+     <span className='navbar-users'>Users online: {this.state.users}</span>
 
      </nav>
      <MessageList messages={this.state.messages}/>
      <Chatbar addMessage={this._addMessage} currentUser={this.state.currentUser}/>
      </div>
     );
-  };
+  }
 
 }
 

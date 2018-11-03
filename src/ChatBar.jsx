@@ -1,30 +1,29 @@
 
 import React, {Component} from 'react';
 
-export default class Chatbar extends Component {
 
+// Component that handles user inputted messages or username changes.
+// Username and message are sent back to App.js for handling prior to
+// sending to server.
+export default class Chatbar extends Component {
   constructor(props) {
     super(props);
     this.state= {name: this.props.currentUser, content: ''};
     this._handleChange = this._handleChange.bind(this);
     this._messageChange = this._messageChange.bind(this);
-
   }
 
-  _messageChange = (e) => {
-
+_messageChange = (e) => {
        this.setState( { content: e.target.value});
-  }
+}
 
  _handleChange = (e) => {
-     console.log(e.target.value.length)
      if (e.target.value.length > -1){
        this.setState({name: e.target.value});
      }
 }
 _onHandleEnter = (e) => {
     if (e.key === 'Enter' && e.target.value !== '') {
-
       this.props.addMessage(this.state);
       this.setState({content: ""});
       e.target.value = "";

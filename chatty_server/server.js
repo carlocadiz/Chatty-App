@@ -7,7 +7,6 @@ const uuid= require('uuid/v4');
 // Set the port to 3001
 const PORT = 3001;
 
-
 // Create a new express server
 const server = express()
    // Make the express server serve static assets (html, javascript, css) from the /public folder
@@ -15,10 +14,9 @@ const server = express()
   .listen(PORT, '0.0.0.0', 'localhost', () => console.log(`Listening on ${ PORT }`));
 
 
-const colours = ['red', 'green', 'blue', 'orange'];
+const colours = ['red', 'green', 'blue', 'orange', 'black'];
 
 function randomColour(){
-  //console.log(colour)
   return colour = colours[Math.floor(Math.random() * colours.length)];
 }
 
@@ -30,46 +28,30 @@ const wss = new SocketServer({ server });
 // the ws parameter in the callback.
 wss.on('connection', (ws) => {
   console.log('Client connected');
-  console.log('number of clients',wss.clients.size)
-  //const newUser = {number: wss.clients.size, colour:randomColour()};
+  console.log('number of clients',wss.clients.size);
 
+  // sends a random colour to the new client connection
   ws.send(JSON.stringify({type:'color', color: randomColour()}));
 
-
+  // sets up callback function to send to all clients
   wss.broadcast = function broadcast(data) {
     wss.clients.forEach(function each(client) {
         client.send(JSON.stringify(data));
       });
   };
 
+  // upon a connection, broadcast to all clients the number of clients currently opened
   wss.broadcast({type:'numberOfUsers', number: wss.clients.size,});
 
-  // Broadcast to everyone else.
+  // when message is received from client, attach unique id and broadcast to all clients
   ws.on('message', (data) => {
     const dataReceived = JSON.parse(data);
-    let dataSend = {};
-    //console.log('server',dataReceived.type)
-
-    switch(dataReceived.type) {
-      case "postMessage":
-        // handle incoming message
-        dataSend = {type: 'incomingMessage', id: uuid(), username: dataReceived.username, content: dataReceived.content, color: dataReceived.color}
-        console.log(`User ${dataReceived.username} said ${dataReceived.content}`);
-        break;
-      case "postNotification":
-        // handle incoming notification
-        dataSend = {type: 'incomingNotification', id: uuid(), content: dataReceived.content};
-        console.log(dataReceived.content);
-        break;
-      default:
-        // show an error in the console if the message type is unknown
-        throw new Error("Unknown event type " + dataReceived.type);
-    }
-    wss.broadcast(dataSend);
-
+    dataReceived.id = uuid();
+    wss.broadcast(dataReceived);
   });
 
   // Set up a callback for when a client closes the socket. This usually means they closed their browser.
+  // Resend the number of opened clients to everyone
   ws.on('close', () => {console.log('Client disconnected');
     wss.broadcast({type: 'numberOfUsers', number:wss.clients.size});
     console.log('number of clients',wss.clients.size);
