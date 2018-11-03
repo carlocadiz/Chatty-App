@@ -1,45 +1,57 @@
-React Boilerplate
+Chatty App
 =====================
+A real time web application using webSockets that introduced us to popular librabries such as React, Babel and Webpack.
+## Final Product
 
-A minimal and light dev environment for ReactJS.
+!["Screenshot of Chatty App with one user"](https://github.com/carlocadiz/Chatty-App/blob/master/docs/ChattyApp-single%20user%20.png)
+!["Screenshot of multiple users chatting simultaneously"](https://github.com/carlocadiz/Chatty-App/blob/master/docs/ChattyApp-multiple%20users.png)
+!["Screenshot of one exiting"](https://github.com/carlocadiz/Chatty-App/blob/master/docs/ChattyApp-one%20user%20exits.%20%20.png)
 
-### Usage
 
-Clone the boilerplate and create your own git repo.
+## Dependencies for root directory(Webpack and React)
+- babel-core
+- babel-loader
+- babel-preset-es2015
+- babel-preset-react
+- css-loader
+- node-sass
+- sass-loader
+- sockjs-client
+- style-loader
+- webpack
+- webpack-dev-server
+- react
+- react-dom
+- prop-types
 
-```
-git clone git@github.com:lighthouse-labs/react-simple-boilerplate.git
-cd react-simple-boilerplate
-git remote rm origin
-git remote add origin [YOUR NEW REPOSITORY]
-# Manually update your package.json file
-```
+## Dependencies for root directory(Webpack and React)
+- express
+- ws
+- uuid
 
-Install the dependencies and start the server.
+## Getting Started
 
-```
-npm install
-npm start
-open http://localhost:3000
-```
+- Install all dependencies (using the `npm install`) command. This will need to be performed in the root directory Webpack and React dependencies and the Chatty_server directory for the Websockets server.
+- Run both servers using the `npm start` command.
 
-### Static Files
+## Functional Requirements
+Primarily a client-side SPA (single-page app) built with ReactJS
+Contains a chat log displaying messages and notifications
+Contains an input field to change your name and an input field to send a message
+The client-side app communicates with a server via WebSockets for multi-user real-time updates
+No persistent database is involved
 
-You can store static files like images, fonts, etc in the `build` folder.
+## Behaviour Requirements
+When any connected user sends a chat message, all connected users receive and display the message
+When any connected user changes their name, all connected users are notified of the name change
+Notifications are styled differently from chat messages
+Header will display the count of connected users
+When the number of connected users changes, this count will be updated for all connected users
+Different users' names will each be coloured differently randomly selected by the server
 
-For example, if you copy a file called my_image.png into the build folder you can access it using `http://localhost:3000/build/my_image.png`.
+## Technical Specifications
+### Stack:
 
-### Linting
-
-This boilerplate project includes React ESLint configuration.
-
-```
-npm run lint
-```
-
-### Dependencies
-
-* React
-* Webpack
-* [babel-loader](https://github.com/babel/babel-loader)
-* [webpack-dev-server](https://github.com/webpack/webpack-dev-server)
+Webpack with Babel, JSX, ES6, webpack dev server (comes with boilerplate)
+WebSockets using Node package ws on the server-side, and native WebSocket on client side
+ReactJS
